@@ -36,8 +36,22 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util.js';
   app.get( "/", async (req, res) => {
     res.send("try GET /filteredimage?image_url={{}}")
   } );
-  
 
+  app.get( "/filteredimage", async (req, res) => {
+    const { image_url }=  req.query
+    if (image_url) {
+      const image = await filterImageFromURL(image_url);
+      try {
+        res.sendFile(image, () => {
+          deleteLocalFiles([image]);
+        });
+      } catch (err) {
+        res.status(500).send('Error:: ' + err)
+      }
+    } else {
+      res.status(422).send('Error:: Image is not present.');
+    }
+  });
   // Start the Server
   app.listen( port, () => {
       console.log( `server running http://localhost:${ port }` );
